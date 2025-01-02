@@ -31,7 +31,50 @@ const Chat = () => {
           <FaInfoCircle />
         </div>
       </div>
-      <div className="center"></div>
+      <div className="center">
+        <div className="message">
+          {/* TODO: change the alt attribute value */}
+          <img src="./avatar.png" alt="user name" />
+          <div className="texts">
+            <p>
+              Lorem ipsum dolor sit amet, consectetur adipisicing elit.
+              Voluptate nulla magni quam fuga non voluptatibus optio, quos
+              consequatur saepe deleniti! Minus omnis modi consequuntur ipsa
+              facilis animi, eveniet corrupti. Obcaecati.
+            </p>
+            <span>1 min ago</span>
+          </div>
+        </div>
+        <div className="message owner">
+          <div className="texts">
+            {/* TODO: change the alt attribute value */}
+            <img
+              src="https://cdn.pixabay.com/photo/2017/10/12/15/59/family-house-2844962_960_720.jpg"
+              alt="user name or image"
+            />
+            <p>
+              Lorem ipsum dolor sit amet, consectetur adipisicing elit.
+              Voluptate nulla magni quam fuga non voluptatibus optio, quos
+              consequatur saepe deleniti! Minus omnis modi consequuntur ipsa
+              facilis animi, eveniet corrupti. Obcaecati.
+            </p>
+            <span>1 min ago</span>
+          </div>
+        </div>
+        <div className="message">
+          {/* TODO: change the alt attribute value */}
+          <img src="./avatar.png" alt="user name" />
+          <div className="texts">
+            <p>
+              Lorem ipsum dolor sit amet, consectetur adipisicing elit.
+              Voluptate nulla magni quam fuga non voluptatibus optio, quos
+              consequatur saepe deleniti! Minus omnis modi consequuntur ipsa
+              facilis animi, eveniet corrupti. Obcaecati.
+            </p>
+            <span>1 min ago</span>
+          </div>
+        </div>
+      </div>
       <div className="bottom">
         <div className="icons">
           <IoImageSharp />
