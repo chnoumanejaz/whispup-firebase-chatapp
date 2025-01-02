@@ -3,6 +3,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    position: relative;
 
     .user {
         display: flex;
@@ -24,6 +25,25 @@
         svg {
             font-size: 25px;
             cursor: pointer;
+        }
+
+    }
+
+    button {
+        position: absolute;
+        bottom: -3%;
+        right: 24%;
+        background-color: rgba(17, 25, 40, 0.7);
+        padding: 10px 20px;
+        color: white;
+        border-radius: 5px;
+        border: none;
+        cursor: pointer;
+        font-size: 15px;
+        transition: all 0.3s ease;
+
+        &:hover {
+            background-color: rgba(17, 25, 40, 0.9);
         }
     }
 }

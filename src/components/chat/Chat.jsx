@@ -1,5 +1,5 @@
 import EmojiPicker from 'emoji-picker-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FaCamera, FaInfoCircle, FaMicrophone } from 'react-icons/fa';
 import { IoCall, IoImageSharp, IoSend, IoVideocam } from 'react-icons/io5';
 import { RiEmojiStickerFill } from 'react-icons/ri';
@@ -8,6 +8,11 @@ import './chat.css';
 const Chat = () => {
   const [openEmojiPicker, setOpenEmojiPicker] = useState(false);
   const [textMsg, setTextMsg] = useState('');
+  const endRef = useRef(null);
+
+  useEffect(() => {
+    endRef.current.scrollIntoView({ behavior: 'smooth' });
+  }, []);
 
   const handleEmoji = e => {
     setTextMsg(textMsg + e.emoji);
@@ -74,6 +79,7 @@ const Chat = () => {
             <span>1 min ago</span>
           </div>
         </div>
+        <div ref={endRef}></div>
       </div>
       <div className="bottom">
         <div className="icons">

@@ -1,9 +1,12 @@
+import { useState } from 'react';
 import './userInfo.css';
 import { HiDotsHorizontal } from 'react-icons/hi';
 import { MdVideoCall } from 'react-icons/md';
 import { RiChatNewFill } from 'react-icons/ri';
 
 const UserInfo = () => {
+  const [showDropdown, setShowDropdown] = useState(false);
+
   return (
     <div className="userInfo">
       <div className="user">
@@ -13,10 +16,11 @@ const UserInfo = () => {
       </div>
 
       <div className="icons">
-        <HiDotsHorizontal />
+        <HiDotsHorizontal onClick={() => setShowDropdown(!showDropdown)} />
         <MdVideoCall />
         <RiChatNewFill />
       </div>
+      {showDropdown && <button className="logOut">Logout</button>}
     </div>
   );
 };
