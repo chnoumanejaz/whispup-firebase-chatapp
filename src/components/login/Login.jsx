@@ -2,10 +2,16 @@ import { useState } from 'react';
 import './login.css';
 import { IoEye, IoEyeOff } from 'react-icons/io5';
 import Register from '../register/Register';
+import { toast } from 'react-toastify';
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
+
+  const handleLogin = e => {
+    e.preventDefault();
+    toast.success('Logged in successfully!');
+  };
 
   if (showRegister) {
     return <Register setShowRegister={setShowRegister} />;
@@ -14,7 +20,7 @@ const Login = () => {
   return (
     <div className="login">
       <h1>Welcome Back! Please Login</h1>
-      <form>
+      <form onSubmit={handleLogin}>
         <div className="formGroup">
           <label htmlFor="email">Email:</label>
           <input

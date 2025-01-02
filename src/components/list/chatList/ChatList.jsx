@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { FaMinus, FaSearch } from 'react-icons/fa';
 import { FaPlus } from 'react-icons/fa6';
 import './chatList.css';
+import AddUser from './addUser/AddUser';
 
 const ChatList = () => {
   const [addMode, setAddMode] = useState(false);
@@ -50,6 +51,7 @@ const ChatList = () => {
           <p>hello hiiii</p>
         </div>
       </div>
+      {addMode && <AddUser />}
     </div>
   );
 };
