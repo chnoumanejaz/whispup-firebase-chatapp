@@ -46,3 +46,9 @@ body {
   border-radius: 10px;
   background-color: rgba(17, 25, 40, 0.9);
 }
+
+button:disabled,
+input:disabled {
+  background-color: rgba(17, 25, 40, 0.5);
+  cursor: not-allowed;
+}
