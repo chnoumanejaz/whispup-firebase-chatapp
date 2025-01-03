@@ -35,6 +35,11 @@
                 background-color: rgba(17, 25, 40, 0.6);
                 color: #fff;
                 font-size: 16px;
+
+                &:disabled {
+                    background-color: rgba(17, 25, 40, 0.4);
+                    cursor: not-allowed;
+                }
             }
 
             .passwordWrapper {
@@ -78,6 +83,10 @@
             color: #fff;
             cursor: pointer;
             font-size: 16px;
+
+            &:disabled {
+                opacity: 0.8;
+                cursor: not-allowed;
+            }
         }
     }
-}
