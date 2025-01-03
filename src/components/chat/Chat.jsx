@@ -4,16 +4,25 @@ import { FaCamera, FaInfoCircle, FaMicrophone } from 'react-icons/fa';
 import { IoCall, IoImageSharp, IoSend, IoVideocam } from 'react-icons/io5';
 import { RiEmojiStickerFill } from 'react-icons/ri';
 import './chat.css';
-import { doc, onSnapshot } from 'firebase/firestore';
+import {
+  arrayUnion,
+  doc,
+  getDoc,
+  onSnapshot,
+  updateDoc,
+} from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { useChatStore } from '../../lib/chatStore';
+import { toast } from 'react-toastify';
+import { useUserStore } from '../../lib/userStore';
 
 const Chat = () => {
   const [openEmojiPicker, setOpenEmojiPicker] = useState(false);
   const [textMsg, setTextMsg] = useState('');
   const [chat, setChat] = useState(null);
   const endRef = useRef(null);
-  const { chatId } = useChatStore();
+  const { chatId, user } = useChatStore();
+  const { currentUser } = useUserStore();
 
   useEffect(() => {
     endRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -32,6 +41,43 @@ const Chat = () => {
   const handleEmoji = e => {
     setTextMsg(textMsg + e.emoji);
     setOpenEmojiPicker(false);
+  };
+
+  const handleSendMsg = async () => {
+    if (!textMsg) return;
+    try {
+      await updateDoc(doc(db, 'chats', chatId), {
+        messages: arrayUnion({
+          text: textMsg,
+          senderId: currentUser.id,
+          createdAt: new Date(),
+        }),
+      });
+
+      const userIds = [currentUser.id, user.id];
+
+      userIds.forEach(async id => {
+        const userChatsRef = doc(db, 'userchats', id);
+        const userChatSnapshot = await getDoc(userChatsRef);
+        if (userChatSnapshot.exists()) {
+          const userChatsData = userChatSnapshot.data();
+
+          const chatIndex = userChatsData.chats.findIndex(
+            c => c.chatId === chatId
+          );
+          userChatsData.chats[chatIndex].lastMessage = textMsg;
+          userChatsData.chats[chatIndex].isSeen = id === currentUser.id;
+          userChatsData.chats[chatIndex].updatedAt = Date.now();
+
+          await updateDoc(userChatsRef, {
+            chats: userChatsData.chats,
+          });
+        }
+      });
+    } catch (error) {
+      console.error('Error sending message: ', error);
+      toast.error('Failed to send message');
+    }
   };
 
   return (
@@ -95,7 +141,7 @@ const Chat = () => {
           </div>
         </div>
 
-        <button className="sendButton">
+        <button className="sendButton" onClick={handleSendMsg}>
           <IoSend />
         </button>
       </div>

@@ -1,4 +1,4 @@
-import { doc, getDoc, onSnapshot } from 'firebase/firestore';
+import { doc, getDoc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { FaMinus, FaSearch } from 'react-icons/fa';
 import { FaPlus } from 'react-icons/fa6';
@@ -7,6 +7,7 @@ import { useUserStore } from '../../../lib/userStore';
 import AddUser from './addUser/AddUser';
 import './chatList.css';
 import { useChatStore } from '../../../lib/chatStore';
+import { toast } from 'react-toastify';
 
 const ChatList = () => {
   const [addMode, setAddMode] = useState(false);
@@ -39,6 +40,29 @@ const ChatList = () => {
     };
   }, [currentUser.id]);
 
+  const handleSelectChat = async chat => {
+    const userChats = chats.map(chat => {
+      const { user, ...rest } = chat;
+      return rest;
+    });
+
+    const chatIndex = userChats.findIndex(item => item.chatId === chat.chatId);
+
+    userChats[chatIndex].isSeen = true;
+
+    const userChatsRef = doc(db, 'userchats', currentUser.id);
+
+    try {
+      await updateDoc(userChatsRef, {
+        chats: userChats,
+      });
+    } catch (error) {
+      console.error('Error updating chat', error);
+      toast.error('Failed to update chat');
+    }
+    useChatStore.getState().changeChat(chat.chatId, chat.user);
+  };
+
   return (
     <div className="chatList">
       <div className="search">
@@ -58,9 +82,10 @@ const ChatList = () => {
           <div
             className="item"
             key={chat.chatId + chat.updatedAt}
-            onClick={() =>
-              useChatStore.getState().changeChat(chat.chatId, chat.user)
-            }>
+            onClick={() => handleSelectChat(chat, chat)}
+            style={{
+              backgroundColor: chat.isSeen ? 'transparent' : '' || '#5183fe',
+            }}>
             <img
               src={chat.user.avatar || './avatar.png'}
               alt={`${chat.user.username}'s avatar`}
