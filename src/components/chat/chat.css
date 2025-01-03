@@ -162,6 +162,7 @@
                     position: absolute;
                     bottom: 80px;
                     right: -25%;
+                    z-index: 1;
                 }
             }
         }

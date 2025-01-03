@@ -6,7 +6,7 @@ import Login from './components/login/Login';
 import Notification from './components/notification/Notification';
 
 const App = () => {
-  const [user, setUser] = useState(true);
+  const [user, setUser] = useState(false);
 
   return (
     <div className="container">
