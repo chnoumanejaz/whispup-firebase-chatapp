@@ -1,18 +1,23 @@
 import { useState } from 'react';
-import './userInfo.css';
 import { HiDotsHorizontal } from 'react-icons/hi';
 import { MdVideoCall } from 'react-icons/md';
 import { RiChatNewFill } from 'react-icons/ri';
+import { useUserStore } from '../../../lib/userStore';
+import './userInfo.css';
+import { auth } from '../../../lib/firebase';
 
 const UserInfo = () => {
   const [showDropdown, setShowDropdown] = useState(false);
+  const { currentUser } = useUserStore();
 
   return (
     <div className="userInfo">
       <div className="user">
-        {/* TODO: change the alt attribute to the user's name */}
-        <img src="./avatar.png" alt="user" />
-        <h3>User name</h3>
+        <img
+          src={currentUser.avatar || './avatar.png'}
+          alt={currentUser.username}
+        />
+        <h3>{currentUser.username}</h3>
       </div>
 
       <div className="icons">
@@ -20,7 +25,11 @@ const UserInfo = () => {
         <MdVideoCall />
         <RiChatNewFill />
       </div>
-      {showDropdown && <button className="logOut">Logout</button>}
+      {showDropdown && (
+        <button className="logOut" onClick={() => auth.signOut()}>
+          Logout
+        </button>
+      )}
     </div>
   );
 };
