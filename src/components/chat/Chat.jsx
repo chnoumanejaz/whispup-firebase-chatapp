@@ -4,15 +4,30 @@ import { FaCamera, FaInfoCircle, FaMicrophone } from 'react-icons/fa';
 import { IoCall, IoImageSharp, IoSend, IoVideocam } from 'react-icons/io5';
 import { RiEmojiStickerFill } from 'react-icons/ri';
 import './chat.css';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { db } from '../../lib/firebase';
+import { useChatStore } from '../../lib/chatStore';
 
 const Chat = () => {
   const [openEmojiPicker, setOpenEmojiPicker] = useState(false);
   const [textMsg, setTextMsg] = useState('');
+  const [chat, setChat] = useState(null);
   const endRef = useRef(null);
+  const { chatId } = useChatStore();
 
   useEffect(() => {
     endRef.current.scrollIntoView({ behavior: 'smooth' });
   }, []);
+
+  useEffect(() => {
+    const unSub = onSnapshot(doc(db, 'chats', chatId), res => {
+      setChat(res.data());
+    });
+
+    return () => {
+      unSub();
+    };
+  }, [chatId]);
 
   const handleEmoji = e => {
     setTextMsg(textMsg + e.emoji);
@@ -37,48 +52,24 @@ const Chat = () => {
         </div>
       </div>
       <div className="center">
-        <div className="message">
-          {/* TODO: change the alt attribute value */}
-          <img src="./avatar.png" alt="user name" />
-          <div className="texts">
-            <p>
-              Lorem ipsum dolor sit amet, consectetur adipisicing elit.
-              Voluptate nulla magni quam fuga non voluptatibus optio, quos
-              consequatur saepe deleniti! Minus omnis modi consequuntur ipsa
-              facilis animi, eveniet corrupti. Obcaecati.
-            </p>
-            <span>1 min ago</span>
+        {chat?.messages && chat.messages.length > 0 ? (
+          chat.messages.map((msg, index) => (
+            <div className="message owner" key={index + msg?.createdAt}>
+              <div className="texts">
+                {msg.img && <img src={msg.img} alt="image" />}
+                <p>{msg.text}</p>
+                <span>1 min ago</span>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div
+            className="texts"
+            style={{ alignSelf: 'center', margin: 'auto' }}>
+            <p>No messages yet</p>
           </div>
-        </div>
-        <div className="message owner">
-          <div className="texts">
-            {/* TODO: change the alt attribute value */}
-            <img
-              src="https://cdn.pixabay.com/photo/2017/10/12/15/59/family-house-2844962_960_720.jpg"
-              alt="user name or image"
-            />
-            <p>
-              Lorem ipsum dolor sit amet, consectetur adipisicing elit.
-              Voluptate nulla magni quam fuga non voluptatibus optio, quos
-              consequatur saepe deleniti! Minus omnis modi consequuntur ipsa
-              facilis animi, eveniet corrupti. Obcaecati.
-            </p>
-            <span>1 min ago</span>
-          </div>
-        </div>
-        <div className="message">
-          {/* TODO: change the alt attribute value */}
-          <img src="./avatar.png" alt="user name" />
-          <div className="texts">
-            <p>
-              Lorem ipsum dolor sit amet, consectetur adipisicing elit.
-              Voluptate nulla magni quam fuga non voluptatibus optio, quos
-              consequatur saepe deleniti! Minus omnis modi consequuntur ipsa
-              facilis animi, eveniet corrupti. Obcaecati.
-            </p>
-            <span>1 min ago</span>
-          </div>
-        </div>
+        )}
+
         <div ref={endRef}></div>
       </div>
       <div className="bottom">

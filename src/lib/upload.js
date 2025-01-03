@@ -14,7 +14,7 @@ export const upload = async file => {
       snapshot => {
         const progress =
           (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        if (progress === 100) toast.success('Image uploaded successfully');
+        console.log('Upload is ' + progress + '% done');
 
         switch (snapshot.state) {
           case 'paused':

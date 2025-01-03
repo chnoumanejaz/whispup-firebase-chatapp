@@ -6,11 +6,13 @@ import { db } from '../../../lib/firebase';
 import { useUserStore } from '../../../lib/userStore';
 import AddUser from './addUser/AddUser';
 import './chatList.css';
+import { useChatStore } from '../../../lib/chatStore';
 
 const ChatList = () => {
   const [addMode, setAddMode] = useState(false);
   const [chats, setChats] = useState([]);
   const { currentUser } = useUserStore();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const unSub = onSnapshot(
@@ -28,6 +30,7 @@ const ChatList = () => {
         const chatData = await Promise.all(promisses);
 
         setChats(chatData.sort((a, b) => b.updatedAt - a.updatedAt));
+        setIsLoading(false);
       }
     );
 
@@ -49,24 +52,35 @@ const ChatList = () => {
         </div>
       </div>
 
-      {chats.length > 0 ? (
+      {!isLoading &&
+        chats.length > 0 &&
         chats.map(chat => (
-          <div className="item" key={chat.chatId}>
-            <img src="./avatar.png" alt={`${chat.user.username}'s avatar`} />
+          <div
+            className="item"
+            key={chat.chatId + chat.updatedAt}
+            onClick={() =>
+              useChatStore.getState().changeChat(chat.chatId, chat.user)
+            }>
+            <img
+              src={chat.user.avatar || './avatar.png'}
+              alt={`${chat.user.username}'s avatar`}
+            />
             <div className="texts">
-              <span>{chat.user.name}</span>
-              <p>{chat.lastMessage}</p>
+              <span>{chat.user.username}</span>
+              <p>{chat.lastMessage || 'Start the conversation now!'}</p>
             </div>
           </div>
-        ))
-      ) : (
+        ))}
+
+      {isLoading && <p className="noChatMsg">Loading Chats...</p>}
+      {chats.length === 0 && !isLoading && (
         <h3 className="noChatMsg">
           No chats available. Start new chat by clicking on the plus button
           above.
         </h3>
       )}
 
-      {addMode && <AddUser />}
+      {addMode && <AddUser setAddMode={setAddMode} />}
     </div>
   );
 };

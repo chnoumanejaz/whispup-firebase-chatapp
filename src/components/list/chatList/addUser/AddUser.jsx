@@ -1,17 +1,29 @@
-import { collection, getDocs, limit, query, where } from 'firebase/firestore';
+import {
+  arrayUnion,
+  collection,
+  doc,
+  getDocs,
+  limit,
+  query,
+  serverTimestamp,
+  setDoc,
+  updateDoc,
+  where,
+} from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { db } from '../../../../lib/firebase';
 import { useUserStore } from '../../../../lib/userStore';
 import './addUser.css';
 
-const AddUser = () => {
+const AddUser = ({ setAddMode }) => {
   const [searchedUser, setSearchedUser] = useState(null);
   const [searchCount, setSearchCount] = useState(0);
   const [isSearching, setIsSearching] = useState(false);
   const { currentUser } = useUserStore();
   const [quickAddUsers, setQuickAddUsers] = useState([]);
   const [isLoadingQuickUsers, setIsLoadingQuickUsers] = useState(false);
+  const [isAddingUser, setIsAddingUser] = useState(false);
 
   useEffect(() => {
     const fetchQuickUsers = async () => {
@@ -69,6 +81,47 @@ const AddUser = () => {
     }
   };
 
+  const handleAddUser = async user => {
+    setIsAddingUser(true);
+    const chatRef = collection(db, 'chats');
+    const userChatsRef = collection(db, 'userchats');
+
+    try {
+      const newChatRef = doc(chatRef);
+
+      await setDoc(newChatRef, {
+        createdAt: serverTimestamp(),
+        messages: [],
+      });
+
+      await updateDoc(doc(userChatsRef, user.id), {
+        chats: arrayUnion({
+          chatId: newChatRef.id,
+          lastMessage: '',
+          receiverId: currentUser.id,
+          updatedAt: Date.now(),
+        }),
+      });
+
+      await updateDoc(doc(userChatsRef, currentUser?.id), {
+        chats: arrayUnion({
+          chatId: newChatRef.id,
+          lastMessage: '',
+          receiverId: user.id,
+          updatedAt: Date.now(),
+        }),
+      });
+
+      toast.success(user.username + ' added successfully!');
+      setAddMode(false);
+    } catch (error) {
+      console.error('Failed to add user', error);
+      toast.error('Failed to add user');
+    } finally {
+      setIsAddingUser(false);
+    }
+  };
+
   return (
     <div className="addUser">
       <form onSubmit={handleSearch}>
@@ -76,16 +129,16 @@ const AddUser = () => {
           type="text"
           placeholder="Enter username"
           name="username"
-          disabled={isSearching}
+          disabled={isSearching || isAddingUser}
           autoFocus
         />
-        <button disabled={isSearching}>
+        <button disabled={isSearching || isAddingUser}>
           {isSearching ? 'Searching...' : 'Search'}
         </button>
       </form>
 
       <div className="usersContainer">
-        {searchedUser && (
+        {searchedUser && searchCount > 0 && (
           <div className="user">
             <div className="detail">
               <img
@@ -98,7 +151,11 @@ const AddUser = () => {
                   : searchedUser.username}
               </span>
             </div>
-            <button disabled={isSearching}>Add User</button>
+            <button
+              disabled={isSearching || isAddingUser}
+              onClick={() => handleAddUser(searchedUser)}>
+              {isAddingUser ? 'Adding...' : 'Add User'}
+            </button>
           </div>
         )}
 
@@ -120,7 +177,16 @@ const AddUser = () => {
                   />
                   <span>{user.username}</span>
                 </div>
-                <button disabled={isSearching}>Add User</button>
+                <button
+                  disabled={isSearching || isAddingUser}
+                  onClick={() => {
+                    setSearchedUser(user);
+                    handleAddUser(user);
+                  }}>
+                  {isAddingUser && user.id === searchedUser?.id
+                    ? 'Adding...'
+                    : 'Add User'}
+                </button>
               </div>
             );
           })}
