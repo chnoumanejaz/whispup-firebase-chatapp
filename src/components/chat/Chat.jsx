@@ -22,12 +22,15 @@ const Chat = () => {
   const [textMsg, setTextMsg] = useState('');
   const [chat, setChat] = useState(null);
   const endRef = useRef(null);
-  const { chatId, user } = useChatStore();
+  const { chatId, user, isCurrentUserBlocked, isReceiverBlocked } =
+    useChatStore();
   const { currentUser } = useUserStore();
   const [image, setImage] = useState({
     file: null,
     url: '',
   });
+  const [loadingChat, setLoadingChat] = useState(true);
+  const [sendingMsg, setSendingMsg] = useState(false);
 
   useEffect(() => {
     endRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -37,6 +40,7 @@ const Chat = () => {
     const unSub = onSnapshot(doc(db, 'chats', chatId), res => {
       setChat(res.data());
     });
+    setLoadingChat(false);
 
     return () => {
       unSub();
@@ -54,6 +58,7 @@ const Chat = () => {
     let imgUrl = null;
 
     try {
+      setSendingMsg(true);
       if (image.file) {
         imgUrl = await upload(image.file);
       }
@@ -91,6 +96,7 @@ const Chat = () => {
       toast.error('Failed to send message');
     }
 
+    setSendingMsg(false);
     setTextMsg('');
     setImage({ file: null, url: '' });
   };
@@ -107,10 +113,12 @@ const Chat = () => {
     <div className="chat">
       <div className="top">
         <div className="user">
-          {/* TODO: change the alt attribute value */}
-          <img src="./avatar.png" alt="userrr" />
+          <img
+            src={user?.avatar || './avatar.png'}
+            alt={user?.username || 'WhispUp user'}
+          />
           <div className="texts">
-            <span>User name</span>
+            <span>{user?.username || 'WhispUp user'}</span>
             <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit.</p>
           </div>
         </div>
@@ -139,14 +147,17 @@ const Chat = () => {
           <div
             className="texts"
             style={{ alignSelf: 'center', margin: 'auto' }}>
-            <p>No messages yet</p>
+            {loadingChat ? <p>Loading messages...</p> : <p>No messages yet</p>}
           </div>
         )}
 
         {image.url && (
-          <div className="message owner">
+          <div
+            className="message owner"
+            style={{ width: '150px', height: '100px' }}>
             <div className="texts">
               <img src={image.url} alt="image" />
+              <small>Type and send...</small>
             </div>
           </div>
         )}
@@ -164,6 +175,7 @@ const Chat = () => {
             id="image"
             style={{ display: 'none' }}
             onChange={handleImage}
+            disabled={sendingMsg || isCurrentUserBlocked || isReceiverBlocked}
           />
           <FaCamera />
           <FaMicrophone />
@@ -171,22 +183,35 @@ const Chat = () => {
         <div className="inputContainer">
           <input
             type="text"
-            placeholder="Type a message..."
+            placeholder={
+              isCurrentUserBlocked || isReceiverBlocked
+                ? 'User is blocked'
+                : 'Type a message...'
+            }
             value={textMsg}
+            disabled={sendingMsg || isCurrentUserBlocked || isReceiverBlocked}
             onChange={e => setTextMsg(e.target.value)}
           />
-          <div className="emoji">
-            <RiEmojiStickerFill
-              onClick={() => setOpenEmojiPicker(!openEmojiPicker)}
-            />
-            <div className="emojiPicker">
-              <EmojiPicker open={openEmojiPicker} onEmojiClick={handleEmoji} />
+          {!isCurrentUserBlocked && !isReceiverBlocked && (
+            <div className="emoji">
+              <RiEmojiStickerFill
+                onClick={() => setOpenEmojiPicker(!openEmojiPicker)}
+              />
+              <div className="emojiPicker">
+                <EmojiPicker
+                  open={openEmojiPicker}
+                  onEmojiClick={handleEmoji}
+                />
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
-        <button className="sendButton" onClick={handleSendMsg}>
-          <IoSend />
+        <button
+          className="sendButton"
+          disabled={sendingMsg || isCurrentUserBlocked || isReceiverBlocked}
+          onClick={handleSendMsg}>
+          {sendingMsg ? 'Sending' : <IoSend />}
         </button>
       </div>
     </div>

@@ -14,6 +14,7 @@ const ChatList = () => {
   const [chats, setChats] = useState([]);
   const { currentUser } = useUserStore();
   const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const unSub = onSnapshot(
@@ -63,12 +64,21 @@ const ChatList = () => {
     useChatStore.getState().changeChat(chat.chatId, chat.user);
   };
 
+  const filteredChats = chats.filter(chat => {
+    return chat.user.username.toLowerCase().includes(searchQuery.toLowerCase());
+  });
+
   return (
     <div className="chatList">
       <div className="search">
         <div className="searchBar">
           <FaSearch />
-          <input type="text" placeholder="Search by user name" />
+          <input
+            type="text"
+            placeholder="Search by user name"
+            onChange={e => setSearchQuery(e.target.value)}
+            value={searchQuery}
+          />
         </div>
 
         <div onClick={() => setAddMode(!addMode)} className="svg">
@@ -77,8 +87,8 @@ const ChatList = () => {
       </div>
 
       {!isLoading &&
-        chats.length > 0 &&
-        chats.map(chat => (
+        filteredChats.length > 0 &&
+        filteredChats.map(chat => (
           <div
             className="item"
             key={chat.chatId + chat.updatedAt}
@@ -87,18 +97,32 @@ const ChatList = () => {
               backgroundColor: chat.isSeen ? 'transparent' : '' || '#5183fe',
             }}>
             <img
-              src={chat.user.avatar || './avatar.png'}
+              src={
+                chat.user.blocked.includes(currentUser.id)
+                  ? './avatar.png'
+                  : chat.user.avatar
+              }
               alt={`${chat.user.username}'s avatar`}
             />
             <div className="texts">
-              <span>{chat.user.username}</span>
-              <p>{chat.lastMessage || 'Start the conversation now!'}</p>
+              <span>
+                {chat.user.blocked.includes(currentUser.id)
+                  ? 'WhispUp User'
+                  : chat.user.username}
+              </span>
+              <p>
+                {chat.user.blocked.includes(currentUser.id)
+                  ? null
+                  : chat.lastMessage
+                  ? chat.lastMessage
+                  : 'Start the conversation now!'}
+              </p>
             </div>
           </div>
         ))}
 
       {isLoading && <p className="noChatMsg">Loading Chats...</p>}
-      {chats.length === 0 && !isLoading && (
+      {filteredChats.length === 0 && !isLoading && (
         <h3 className="noChatMsg">
           No chats available. Start new chat by clicking on the plus button
           above.
