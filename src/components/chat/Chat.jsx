@@ -15,6 +15,7 @@ import { db } from '../../lib/firebase';
 import { useChatStore } from '../../lib/chatStore';
 import { toast } from 'react-toastify';
 import { useUserStore } from '../../lib/userStore';
+import { upload } from '../../lib/upload';
 
 const Chat = () => {
   const [openEmojiPicker, setOpenEmojiPicker] = useState(false);
@@ -23,6 +24,10 @@ const Chat = () => {
   const endRef = useRef(null);
   const { chatId, user } = useChatStore();
   const { currentUser } = useUserStore();
+  const [image, setImage] = useState({
+    file: null,
+    url: '',
+  });
 
   useEffect(() => {
     endRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -45,12 +50,19 @@ const Chat = () => {
 
   const handleSendMsg = async () => {
     if (!textMsg) return;
+
+    let imgUrl = null;
+
     try {
+      if (image.file) {
+        imgUrl = await upload(image.file);
+      }
       await updateDoc(doc(db, 'chats', chatId), {
         messages: arrayUnion({
           text: textMsg,
           senderId: currentUser.id,
           createdAt: new Date(),
+          ...(imgUrl && { img: imgUrl }),
         }),
       });
 
@@ -78,6 +90,17 @@ const Chat = () => {
       console.error('Error sending message: ', error);
       toast.error('Failed to send message');
     }
+
+    setTextMsg('');
+    setImage({ file: null, url: '' });
+  };
+
+  const handleImage = e => {
+    if (!e.target.files[0]) return;
+    setImage({
+      file: e.target.files[0],
+      url: URL.createObjectURL(e.target.files[0]),
+    });
   };
 
   return (
@@ -100,7 +123,11 @@ const Chat = () => {
       <div className="center">
         {chat?.messages && chat.messages.length > 0 ? (
           chat.messages.map((msg, index) => (
-            <div className="message owner" key={index + msg?.createdAt}>
+            <div
+              className={
+                msg.senderId === currentUser.id ? 'message owner' : 'message'
+              }
+              key={index + msg?.createdAt}>
               <div className="texts">
                 {msg.img && <img src={msg.img} alt="image" />}
                 <p>{msg.text}</p>
@@ -116,11 +143,28 @@ const Chat = () => {
           </div>
         )}
 
+        {image.url && (
+          <div className="message owner">
+            <div className="texts">
+              <img src={image.url} alt="image" />
+            </div>
+          </div>
+        )}
+
         <div ref={endRef}></div>
       </div>
       <div className="bottom">
         <div className="icons">
-          <IoImageSharp />
+          <label htmlFor="image">
+            <IoImageSharp />
+          </label>
+          <input
+            type="file"
+            name="image"
+            id="image"
+            style={{ display: 'none' }}
+            onChange={handleImage}
+          />
           <FaCamera />
           <FaMicrophone />
         </div>
