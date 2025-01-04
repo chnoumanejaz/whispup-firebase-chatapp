@@ -5,3 +5,50 @@
   font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
     "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
 }
+
+body {
+  background: url("/bg.jpg") center/cover no-repeat fixed;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  color: white;
+  overflow: hidden;
+}
+
+.container {
+  height: 90vh;
+  width: 90vw;
+  background-color: rgba(17, 25, 40, 0.774);
+  backdrop-filter: blur(20px) saturate(180%);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(17, 25, 40, 0.574);
+  border-radius: 2.8rem;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(17, 25, 40, 0.974)
+}
+
+.loading {
+  padding: 50px;
+  font-size: 36px;
+  border-radius: 10px;
+  background-color: rgba(17, 25, 40, 0.9);
+}
+
+button:disabled,
+input:disabled {
+  background-color: rgba(17, 25, 40, 0.5);
+  cursor: not-allowed;
+}
